@@ -1,0 +1,17 @@
+appname: webapp2
+replicaCount: 1
+image:
+  artficate_repo: nginx
+  repository: webapp2
+  tag: latest
+  pullPolicy: IfNotPresent
+resources:
+  limits:
+    cpu: "0.1"
+    memory: "128Mi"
+  requests:
+    cpu: "0.1"
+    memory: "128Mi"
+service: 
+  port: 80
+

@@ -1,0 +1,76 @@
+
+name: TFDemo3AKS
+
+trigger:
+- main  # Adjust this based on your branch configuration
+
+pr:
+- main
+
+variables:
+  sc_name: 'sc-azure-sp' # service connection name
+  rg_name: 'RG-TF-DEMO' # resource group name
+  rg_location: 'eastus' # resource group location
+  sa_name: 'rktfstatesa2024' # storage account name 
+
+  
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+- job: DeployInfrastructure
+  displayName: 'Deploy Infrastructure'
+  steps:
+  - checkout: self
+  - task: TerraformInstaller@1
+    inputs:
+      terraformVersion: 'latest'
+
+  - task: AzureCLI@2
+    displayName: Fetch credentials for azure
+    inputs:
+      azureSubscription: 'sc-azure-sp' 
+      scriptType: bash
+      addSpnToEnvironment: true
+      useGlobalConfig: true
+      scriptLocation: inlineScript
+      inlineScript: |
+        echo "##vso[task.setvariable variable=ARM_TENANT_ID;]$tenantId"
+        echo "##vso[task.setvariable variable=ARM_CLIENT_ID;]$servicePrincipalId"
+        echo "##vso[task.setvariable variable=ARM_CLIENT_SECRET;]$servicePrincipalId"
+        echo "##vso[task.setvariable variable=ARM_CLIENT_SECRET;]$servicePrincipalKey"
+        echo "##vso[task.setvariable variable=ARM_SUBSCRIPTION_ID;]$(az account show --query id -o tsv)"
+        az storage account create --name $(sa_name) --resource-group $(rg_name) --location $(rg_location) --sku Standard_LRS
+        az storage container create --name terraform --account-name $(sa_name)
+
+  - task: TerraformTaskV4@4
+    displayName: Terraform Init
+
+    inputs:
+      provider: 'azurerm'
+      command: 'init'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/demo3'
+      backendServiceArm: $(sc_name) #this works with service principal connection only
+      backendAzureRmResourceGroupName: $(rg_name)
+      backendAzureRmStorageAccountName: $(sa_name)
+      backendAzureRmContainerName: 'terraform'
+      backendAzureRmKey: 'dev.tfstate'
+
+  - task: TerraformTaskV4@4
+    displayName: Terraform Plan
+    inputs:
+      provider: 'azurerm'
+      command: 'plan'
+      commandOptions: '-var-file="dev.tfvars"'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/demo3'
+      environmentServiceNameAzureRM: $(sc_name)
+
+  - task: TerraformTaskV4@4
+    displayName: Terraform Apply
+    inputs:
+      workingDirectory: '$(System.DefaultWorkingDirectory)/demo3'
+      provider: 'azurerm'
+      command: 'apply'
+      commandOptions: '-var-file="dev.tfvars" -auto-approve'
+      environmentServiceNameAzureRM: $(sc_name)
+      
