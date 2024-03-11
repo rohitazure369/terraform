@@ -19,7 +19,7 @@ resource "azurerm_subnet" "vm" {
 
 }
 
-resource "azurerm_subnet" "vm" {
+resource "azurerm_subnet" "aks" {
   name                 = "snet-aks"
   resource_group_name  = azurerm_resource_group.aks.name
   virtual_network_name = azurerm_virtual_network.aks.name
