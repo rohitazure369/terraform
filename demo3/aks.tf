@@ -39,6 +39,21 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
 
+  network_profile {
+          dns_service_ip     = "10.100.0.10"
+          docker_bridge_cidr = "172.17.0.1/16"
+          load_balancer_sku  = "standard"
+          network_plugin     = "azure"
+          network_policy     = "calico"
+          #outbound_type      = (known after apply)
+          #pod_cidr           = (known after apply)
+          service_cidr       = "10.100.0.0/16"
+        }
+
+
+
+
+
 }
 
 
