@@ -12,6 +12,15 @@ resource "azurerm_user_assigned_identity" "uai" {
 
 
 
+
+resource "azurerm_role_assignment" "role_assign" {
+  scope                = azurerm_private_dns_zone.aks.id
+  role_definition_name = "Private DNS Zone Contributor"
+  principal_id         = azurerm_user_assigned_identity.uai.principal_id
+}
+
+
+
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${var.env}"
   location            = var.rg_location
