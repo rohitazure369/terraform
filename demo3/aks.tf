@@ -4,24 +4,6 @@ resource "azurerm_private_dns_zone" "aks" {
 }
 
 
-# Commenting below
-<<EOF
-
-resource "azurerm_user_assigned_identity" "private_dns" {
-  name                = "aks-${var.env}-identity"
-  resource_group_name = var.rg_name
-  location            = var.rg_location
-}
-
-resource "azurerm_role_assignment" "role_assign" {
-  scope                = azurerm_private_dns_zone.aks.id
-  role_definition_name = "Private DNS Zone Contributor"
-  principal_id         = azurerm_user_assigned_identity.private_dns.principal_id
-}
-
-EOF
-# comment end
-
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${var.env}"
