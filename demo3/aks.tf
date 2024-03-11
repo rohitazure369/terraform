@@ -4,6 +4,17 @@ resource "azurerm_private_dns_zone" "aks" {
 }
 
 
+resource "azurerm_user_assigned_identity" "private_dns" {
+  name                = "aks-${var.env}-identity"
+  resource_group_name = var.rg_name
+  location            = var.rg_location
+}
+
+resource "azurerm_role_assignment" "role_assign" {
+  scope                = azurerm_private_dns_zone.example.id
+  role_definition_name = "Private DNS Zone Contributor"
+  principal_id         = azurerm_user_assigned_identity.private_dns.principal_id
+}
 
 
 
@@ -20,6 +31,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
     name       = "default"
     node_count = var.aks_node_count
     vm_size    = "Standard_B2s"
+    vnet_subnet_id = azurerm_subnet.aks.id
   }
 
   identity {
@@ -29,17 +41,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   tags = {
     Environment = "Production"
   }
+
+  depends_on = [
+    azurerm_role_assignment.role_assign,
+  ]
+
+
 }
-
-output "client_certificate" {
-  value     = azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate
-  sensitive = true
-}
-
-output "kube_config" {
-  value = azurerm_kubernetes_cluster.aks.kube_config_raw
-
-  sensitive = true
-}
-
-
