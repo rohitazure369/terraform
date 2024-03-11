@@ -4,6 +4,13 @@ resource "azurerm_private_dns_zone" "aks" {
 }
 
 
+resource "azurerm_user_assigned_identity" "uai" {
+  name                = "aks-${var.env}-identity"
+  resource_group_name = var.rg_name
+  location            = var.rg_location
+}
+
+
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${var.env}"
@@ -22,8 +29,31 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type                    = "ServicePrincipal"
+    user_assigned_identity_id = azurerm_user_assigned_identity.uai.id
   }
+
+
+
+
+  # Attach ACR to AKS
+  service_principal {
+    client_id     = azurerm_container_registry.acr.admin_username
+    client_secret = azurerm_container_registry.acr.admin_password
+  }
+
+  addon_profile {
+    acr {
+      enabled = true
+      registry_login_server = azurerm_container_registry.acr.login_server
+      registry_username     = azurerm_container_registry.acr.admin_username
+      registry_password     = azurerm_container_registry.acr.admin_password
+    }
+  }
+
+
+
+
 
   tags = {
     Environment = "Production"
