@@ -30,11 +30,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   # Assign the user-managed identity to the AKS cluster
   identity {
-    type                     = "UserAssigned"
-    user_assigned_identity_id = azurerm_user_assigned_identity.uai.id
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.uai.id]
   }
-
-
 
   tags = {
     Environment = "Production"
