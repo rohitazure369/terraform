@@ -1,12 +1,23 @@
 
 
+resource "azurerm_user_assigned_identity" "uai" {
+  name                = "aks-${var.env}-identity"
+  resource_group_name = var.rg_name
+  location            = var.rg_location
+}
+
+
+resource "azurerm_role_assignment" "role_assign" {
+  scope                = azurerm_private_dns_zone.aks.id
+  role_definition_name = "Private DNS Zone Contributor"
+  principal_id         = azurerm_user_assigned_identity.uai.principal_id
+}
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${var.env}"
   location            = var.rg_location
   resource_group_name = var.rg_name
   dns_prefix          = "aks-${var.env}-dns"
-
 
 
   default_node_pool {
@@ -37,6 +48,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
           #pod_cidr           = (known after apply)
           service_cidr       = "10.100.0.0/16"
         }
+
+
+
+
 
 }
 
