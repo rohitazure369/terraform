@@ -29,9 +29,5 @@ resource "azurerm_kubernetes_cluster" "aks" {
     Environment = "Production"
   }
 
-  depends_on = [
-    azurerm_role_assignment.role_assign,
-  ]
-
 
 }
