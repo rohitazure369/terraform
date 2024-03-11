@@ -16,6 +16,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   resource_group_name = var.rg_name
   size                = "Standard_F2"
   admin_username      = "adminuser"
+  disable_password_authentication = false  # Disabling password authentication
+
   admin_password      = "AzureAdminConsole100!"
   network_interface_ids = [
     azurerm_network_interface.vm.id,
