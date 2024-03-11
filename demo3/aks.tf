@@ -11,7 +11,7 @@ resource "azurerm_user_assigned_identity" "private_dns" {
 }
 
 resource "azurerm_role_assignment" "role_assign" {
-  scope                = azurerm_private_dns_zone.example.id
+  scope                = azurerm_private_dns_zone.aks.id
   role_definition_name = "Private DNS Zone Contributor"
   principal_id         = azurerm_user_assigned_identity.private_dns.principal_id
 }
