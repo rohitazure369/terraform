@@ -28,30 +28,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
     vnet_subnet_id = azurerm_subnet.aks.id
   }
 
+  # Assign the user-managed identity to the AKS cluster
   identity {
-    type                    = "ServicePrincipal"
+    type                     = "UserAssigned"
     user_assigned_identity_id = azurerm_user_assigned_identity.uai.id
   }
-
-
-
-
-  # Attach ACR to AKS
-  service_principal {
-    client_id     = azurerm_container_registry.acr.admin_username
-    client_secret = azurerm_container_registry.acr.admin_password
-  }
-
-  addon_profile {
-    acr {
-      enabled = true
-      registry_login_server = azurerm_container_registry.acr.login_server
-      registry_username     = azurerm_container_registry.acr.admin_username
-      registry_password     = azurerm_container_registry.acr.admin_password
-    }
-  }
-
-
 
 
 
@@ -60,4 +41,13 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
 
+}
+
+
+# Allow AKS access to pull images from ACR
+resource "azurerm_role_assignment" "acr_aks_pull" {
+  principal_id                     = azurerm_kubernetes_cluster.aks.kubelet_identity[0].object_id
+  role_definition_name             = "AcrPull"
+  scope                            = azurerm_container_registry.acr.id
+  skip_service_principal_aad_check = true
 }
