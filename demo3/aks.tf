@@ -7,11 +7,6 @@ resource "azurerm_user_assigned_identity" "uai" {
 }
 
 
-resource "azurerm_role_assignment" "role_assign" {
-  scope                = azurerm_private_dns_zone.aks.id
-  role_definition_name = "Private DNS Zone Contributor"
-  principal_id         = azurerm_user_assigned_identity.uai.principal_id
-}
 
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${var.env}"
@@ -40,7 +35,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   network_profile {
           dns_service_ip     = "10.100.0.10"
-          docker_bridge_cidr = "172.17.0.1/16"
           load_balancer_sku  = "standard"
           network_plugin     = "azure"
           network_policy     = "calico"
