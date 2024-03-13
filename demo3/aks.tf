@@ -1,13 +1,5 @@
 
 
-resource "azurerm_user_assigned_identity" "uai" {
-  name                = "aks-${var.env}-identity"
-  resource_group_name = var.rg_name
-  location            = var.rg_location
-}
-
-
-
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-${var.env}"
   location            = var.rg_location
@@ -24,8 +16,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   # Assign the user-managed identity to the AKS cluster
   identity {
-    type = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.uai.id]
+    type = "SystemManaged"
   }
 
   tags = {
