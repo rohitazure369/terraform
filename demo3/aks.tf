@@ -16,7 +16,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   # Assign the user-managed identity to the AKS cluster
   identity {
-    type = "SystemManaged"
+    type = "SystemAssigned"
   }
 
   tags = {
